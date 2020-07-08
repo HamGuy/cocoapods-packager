@@ -317,7 +317,7 @@ MAP
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
       end
 
-      command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
+      command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj -verbose 2>&1"
       copy_modulemap
       output = `#{command}`.lines.to_a
 
@@ -329,7 +329,11 @@ MAP
         # process terminates.
         #
         # See http://ruby-doc.org/core-1.9.3/Process.html#method-c-exit
-        Process.exit
+        if $?.exitstatus != 65
+          Process.exit
+        else
+          UI.puts("Unexpected Error #{$?.exitstatus} \n")
+        end
       end
     end
 
