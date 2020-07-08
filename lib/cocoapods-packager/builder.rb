@@ -1,6 +1,6 @@
 module Pod
   class Builder
-    def initialize(platform, static_installer, source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
+    def initialize(platform, static_installer, source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps,working_dir)
       @platform = platform
       @static_installer = static_installer
       @source_dir = source_dir
@@ -14,6 +14,7 @@ module Pod
       @config = config
       @bundle_identifier = bundle_identifier
       @exclude_deps = exclude_deps
+      @working_dir = working_dir
 
       @file_accessors = @static_installer.pod_targets.select { |t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
     end
@@ -317,6 +318,7 @@ MAP
       end
 
       command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
+      copy_modulemap
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
@@ -329,6 +331,35 @@ MAP
         # See http://ruby-doc.org/core-1.9.3/Process.html#method-c-exit
         Process.exit
       end
+    end
+
+    def copy_modulemap
+
+      spec_name = @spec.name
+      modulemap_soure_dir = "#{@source_dir}/Example/Pods/Target Support Files/#{spec_name}/#{spec_name}.modulemap"
+
+      if Dir.exist?(modulemap_soure_dir)
+        UI.puts("not exies expmle source dir")
+        modulemap_soure_dir = "#{@source_dir}/Pods/Target Support Files/#{spec_name}/#{spec_name}.modulemap" 
+      end
+
+      unless Dir.exist?(modulemap_soure_dir)
+        directory_name = "#{@working_dir}/build/Pods.build/Release-iphonesimulator/#{spec_name}"
+        FileUtils.mkdir_p(directory_name) unless File.exists?(directory_name)
+
+        modulemap_target_dir = "#{directory_name}/#{spec_name}.modulemap"
+
+        UI.puts("copy file from #{modulemap_soure_dir} to #{modulemap_target_dir}")
+        FileUtils.cp(modulemap_soure_dir, modulemap_target_dir)
+
+        directory_name = "#{@working_dir}/build/Release-iphonesimulator/#{spec_name}"
+        FileUtils.mkdir_p(directory_name) unless File.exists?(directory_name)
+
+        modulemap_target_dir = "#{directory_name}/#{spec_name}.modulemap"
+
+        UI.puts("copy file from #{modulemap_soure_dir} to #{modulemap_target_dir}")
+        FileUtils.cp(modulemap_soure_dir, modulemap_target_dir)
+      end      
     end
   end
 end

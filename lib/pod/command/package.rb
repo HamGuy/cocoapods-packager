@@ -57,6 +57,7 @@ module Pod
         @spec = spec_with_path(@name)
         @is_spec_from_path = true if @spec
         @spec ||= spec_with_name(@name)
+        @working_dir = nil
         super
       end
 
@@ -77,6 +78,7 @@ module Pod
 
         target_dir, work_dir = create_working_directory
         return if target_dir.nil?
+        @working_dir  = work_dir
         build_package
 
         `mv "#{work_dir}" "#{target_dir}"`
@@ -164,7 +166,8 @@ module Pod
           @dynamic,
           @config,
           @bundle_identifier,
-          @exclude_deps
+          @exclude_deps,
+          @working_dir
         )
 
         builder.build(@package_type)
