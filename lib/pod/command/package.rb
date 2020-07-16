@@ -58,6 +58,9 @@ module Pod
         @is_spec_from_path = true if @spec
         @spec ||= spec_with_name(@name)
         @working_dir = nil
+
+        spec_info = Pod::Specification.from_file(Dir.pwd+'/'+@name)
+        @contains_swift =  spec_info.attributes_hash['swift_versions'].blank? ? false : true  
         super
       end
 
@@ -167,7 +170,8 @@ module Pod
           @config,
           @bundle_identifier,
           @exclude_deps,
-          @working_dir
+          @working_dir,
+          @contains_swift
         )
 
         builder.build(@package_type)

@@ -1,6 +1,6 @@
 module Pod
   class Builder
-    def initialize(platform, static_installer, source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps,working_dir)
+    def initialize(platform, static_installer, source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps,working_dir,contains_swift)
       @platform = platform
       @static_installer = static_installer
       @source_dir = source_dir
@@ -15,7 +15,7 @@ module Pod
       @bundle_identifier = bundle_identifier
       @exclude_deps = exclude_deps
       @working_dir = working_dir
-
+      @contains_swift = contains_swift
       @file_accessors = @static_installer.pod_targets.select { |t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
     end
 
@@ -318,7 +318,7 @@ MAP
       end
 
       command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj -verbose 2>&1"
-      copy_modulemap
+      copy_modulemap if @contains_swift
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
@@ -342,7 +342,7 @@ MAP
       spec_name = @spec.name
       modulemap_soure_dir = "#{@source_dir}/Example/Pods/Target Support Files/#{spec_name}/#{spec_name}.modulemap"
 
-      if Dir.exist?(modulemap_soure_dir)
+      unless Dir.exist?(modulemap_soure_dir)
         UI.puts("not exies expmle source dir")
         modulemap_soure_dir = "#{@source_dir}/Pods/Target Support Files/#{spec_name}/#{spec_name}.modulemap" 
       end
