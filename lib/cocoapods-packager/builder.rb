@@ -196,6 +196,10 @@ module Pod
     def copy_headers
       headers_source_root = "#{@public_headers_root}/#{@spec.name}"
 
+      # copy module_name-Swift.h here
+      source_swifth_path = "#{Dir.pwd}/build/Pods.build/Release-iphoneos/#{@spec.name}.build/DerivedSources/#{@spec.name}-Swift.h"
+      destination_swifth_path = "#{headers_source_root}/#{@spec.name}-Swift.h"
+
       Dir.glob("#{headers_source_root}/**/*.h").
         each { |h| `ditto #{h} #{@fwk.headers_path}/#{h.sub(headers_source_root, '')}` }
 
