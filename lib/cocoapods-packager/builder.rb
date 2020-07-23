@@ -212,7 +212,7 @@ module Pod
       elsif File.exist?("#{@public_headers_root}/#{@spec.name}/#{@spec.name}.h")
         module_map = <<MAP
 framework module #{@spec.name} {
-  umbrella header "#{@spec.name}.h"
+  umbrella header "#{@spec.name}-umbrella.h"
 
   export *
   module * { export * }
